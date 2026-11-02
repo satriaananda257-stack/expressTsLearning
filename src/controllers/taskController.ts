@@ -10,7 +10,6 @@ let dataTasks: Task[] = [
     priority: "high",
     deadline: "2026-11-05",
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   {
     id: 2,
@@ -20,7 +19,6 @@ let dataTasks: Task[] = [
     priority: "high",
     deadline: "2026-11-10",
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
   {
     id: 3,
@@ -30,7 +28,6 @@ let dataTasks: Task[] = [
     priority: "medium",
     deadline: null,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -76,8 +73,6 @@ export class TaskController {
         ? Math.max(...dataTasks.map((t) => t.id)) + 1
         : 1;
 
-    const now = new Date().toISOString();
-
     const newTask: Task = {
       id: newId,
       title,
@@ -85,8 +80,7 @@ export class TaskController {
       status: status ?? "pending",
       priority: priority ?? "medium",
       deadline: deadline ?? null,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date().toISOString(),
     };
 
     dataTasks.push(newTask);
@@ -117,7 +111,6 @@ export class TaskController {
     if (status !== undefined) task.status = status;
     if (priority !== undefined) task.priority = priority;
     if (deadline !== undefined) task.deadline = deadline;
-    task.updatedAt = new Date().toISOString();
 
     return res.status(200).json({
       status: true,
@@ -160,9 +153,7 @@ export class TaskController {
     }
 
     const { status } = req.body;
-
     task.status = status;
-    task.updatedAt = new Date().toISOString();
 
     return res.status(200).json({
       status: true,

@@ -8,5 +8,4 @@ export interface Task {
   priority: "low" | "medium" | "high";
   deadline: string | null;
   createdAt: string;
-  updatedAt: string;
 }
