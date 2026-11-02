@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 import { Task, TaskStatus } from "../types/task";
 
-const VALID_STATUS: TaskStatus[] = ["pending", "completed"];
-const VALID_PRIORITY = ["low", "medium", "high"];
-
 let dataTasks: Task[] = [
   {
     id: 1,
@@ -41,38 +38,12 @@ export class TaskController {
 
   // GET /tasks
   getAllTasks = async (req: Request, res: Response) => {
-    const { status, priority } = req.query;
-
-    let result = [...dataTasks];
-
-    // filter by status (optional query)
-    if (status) {
-      if (!VALID_STATUS.includes(status as TaskStatus)) {
-        return res.status(400).json({
-          status: false,
-          message: `Status tidak valid. Gunakan: ${VALID_STATUS.join(", ")}`,
-        });
-      }
-      result = result.filter((t) => t.status === status);
-    }
-
-    // filter by priority (optional query)
-    if (priority) {
-      if (!VALID_PRIORITY.includes(priority as string)) {
-        return res.status(400).json({
-          status: false,
-          message: `Priority tidak valid. Gunakan: ${VALID_PRIORITY.join(", ")}`,
-        });
-      }
-      result = result.filter((t) => t.priority === priority);
-    }
-
     return res.status(200).json({
       status: true,
       message: "Get All Tasks Success",
       data: {
-        total: result.length,
-        tasks: result,
+        total: dataTasks.length,
+        tasks: dataTasks,
       },
     });
   };
@@ -80,14 +51,6 @@ export class TaskController {
   // GET /tasks/:id
   getTaskById = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        status: false,
-        message: "ID tidak valid",
-      });
-    }
-
     const task = dataTasks.find((t) => t.id === id);
 
     if (!task) {
@@ -108,32 +71,6 @@ export class TaskController {
   createTask = async (req: Request, res: Response) => {
     const { title, description, status, priority, deadline } = req.body;
 
-    // validasi wajib
-    if (!title || !description) {
-      return res.status(400).json({
-        status: false,
-        message: "Title dan description wajib diisi",
-      });
-    }
-
-    // validasi status
-    const taskStatus: TaskStatus = status ?? "pending";
-    if (!VALID_STATUS.includes(taskStatus)) {
-      return res.status(400).json({
-        status: false,
-        message: `Status tidak valid. Gunakan: ${VALID_STATUS.join(", ")}`,
-      });
-    }
-
-    // validasi priority
-    const taskPriority = priority ?? "medium";
-    if (!VALID_PRIORITY.includes(taskPriority)) {
-      return res.status(400).json({
-        status: false,
-        message: `Priority tidak valid. Gunakan: ${VALID_PRIORITY.join(", ")}`,
-      });
-    }
-
     const newId =
       dataTasks.length > 0
         ? Math.max(...dataTasks.map((t) => t.id)) + 1
@@ -145,8 +82,8 @@ export class TaskController {
       id: newId,
       title,
       description,
-      status: taskStatus,
-      priority: taskPriority,
+      status: status ?? "pending",
+      priority: priority ?? "medium",
       deadline: deadline ?? null,
       createdAt: now,
       updatedAt: now,
@@ -164,14 +101,6 @@ export class TaskController {
   // PUT /tasks/:id
   updateTask = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        status: false,
-        message: "ID tidak valid",
-      });
-    }
-
     const task = dataTasks.find((t) => t.id === id);
 
     if (!task) {
@@ -183,23 +112,6 @@ export class TaskController {
 
     const { title, description, status, priority, deadline } = req.body;
 
-    // validasi status jika dikirim
-    if (status !== undefined && !VALID_STATUS.includes(status)) {
-      return res.status(400).json({
-        status: false,
-        message: `Status tidak valid. Gunakan: ${VALID_STATUS.join(", ")}`,
-      });
-    }
-
-    // validasi priority jika dikirim
-    if (priority !== undefined && !VALID_PRIORITY.includes(priority)) {
-      return res.status(400).json({
-        status: false,
-        message: `Priority tidak valid. Gunakan: ${VALID_PRIORITY.join(", ")}`,
-      });
-    }
-
-    // update hanya field yang dikirim
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
     if (status !== undefined) task.status = status;
@@ -217,14 +129,6 @@ export class TaskController {
   // DELETE /tasks/:id
   deleteTask = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        status: false,
-        message: "ID tidak valid",
-      });
-    }
-
     const index = dataTasks.findIndex((t) => t.id === id);
 
     if (index === -1) {
@@ -243,17 +147,9 @@ export class TaskController {
     });
   };
 
-  // PATCH /tasks/:id/status — shortcut ubah status saja
+  // PATCH /tasks/:id/status
   updateStatus = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        status: false,
-        message: "ID tidak valid",
-      });
-    }
-
     const task = dataTasks.find((t) => t.id === id);
 
     if (!task) {
@@ -264,13 +160,6 @@ export class TaskController {
     }
 
     const { status } = req.body;
-
-    if (!status || !VALID_STATUS.includes(status)) {
-      return res.status(400).json({
-        status: false,
-        message: `Status tidak valid. Gunakan: ${VALID_STATUS.join(", ")}`,
-      });
-    }
 
     task.status = status;
     task.updatedAt = new Date().toISOString();
